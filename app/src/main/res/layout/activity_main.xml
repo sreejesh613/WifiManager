@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <Button
+        android:id="@+id/wifi_list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="获取wifi列表"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <Button
+        android:id="@+id/wifi_scan"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="开始扫描"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/wifi_list" />
+
+
+    <Button
+        android:id="@+id/scan_result"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="扫描结果"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/wifi_scan" />
+
+
+    <Button
+        android:id="@+id/wifi_enable"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="启用"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/wifi_disable"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/scan_result" />
+
+
+    <Button
+        android:id="@+id/wifi_disable"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="禁用"
+        app:layout_constraintLeft_toRightOf="@id/wifi_enable"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/scan_result" />
+
+    <Button
+        android:id="@+id/wifi_add"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="添加"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/wifi_disable" />
+
+
+    <Button
+        android:id="@+id/wifi_remove"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="移除"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/wifi_add" />
+
+    <Button
+        android:id="@+id/wifi_enable_one"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="启用某一个"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/wifi_disable_one"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/wifi_remove" />
+
+
+    <Button
+        android:id="@+id/wifi_disable_one"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="禁用某一个"
+        app:layout_constraintLeft_toRightOf="@id/wifi_enable_one"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/wifi_remove" />
+
+
+    <Button
+        android:id="@+id/wifi_disconnect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="断开连接"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/wifi_disable_one" />
+
+
+    <Button
+        android:id="@+id/wifi_reconnect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="重新连接"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/wifi_disconnect" />
+
+
+</android.support.constraint.ConstraintLayout>

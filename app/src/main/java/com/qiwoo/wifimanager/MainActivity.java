@@ -8,8 +8,8 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -105,16 +105,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-//密码错误也会添加成功，只不过连接不上
+                //密码错误也会添加成功，只不过连接不上
                 WifiConfiguration configuration = new WifiConfiguration();
                 configuration.SSID = "live_iot";
 
-//WPA协议
+                //WPA-PSK
                 configuration.preSharedKey = "\"" + 123456 + "\"";
-
-//WEP协议
-//              configuration.wepKeys[0] = "\"" + 123456 + "\"";
-
+                //WEP
+                //configuration.wepKeys[0] = "\"" + 123456 + "\"";
 
                 int id = manager.addNetwork(configuration);
                 boolean succeeded = manager.enableNetwork(id, true);

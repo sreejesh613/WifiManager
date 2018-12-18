@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
@@ -15,6 +16,7 @@ import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -29,6 +31,8 @@ import java.net.SocketException;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -39,8 +43,11 @@ public class MainActivity extends AppCompatActivity {
     private WifiManager manager;
     private int custom_wifi_id =0;
     private BroadcastHelper bh = null;
-    private String wifiSsid = "notApublicHotspot";
+    private String wifiSsid = "NPA";
+    private String R_wifiSsid = "\""+ "NPA" +"\"";
     private String wifiPassword = "agent@99";
+    private boolean isWifiConnected = false;
+    private  Timer t;
     //private String wifiSsid = "HealthApp"; //"\"" + HealthApp + "\"";
     // private String wifiPassword = "Hmicro@1234"; //"\"" + Hmicro@1234 + "\"";
 
@@ -49,42 +56,108 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
-          //  Log.e(TAG,"Intent :"+action);
+            //  Log.e(TAG,"Intent :"+action);
 
             if (action.equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
-                boolean success = intent.getBooleanExtra("EXTRA_RESULTS_UPDATED",false);
+                boolean success = intent.getBooleanExtra(WifiManager.EXTRA_RESULTS_UPDATED,false);
                 List<ScanResult> data = manager.getScanResults ();
-             //   Log.e(TAG,"scan suucess on R"+success);
+                //   Log.e(TAG,"scan suucess on R"+success);
                 Toast.makeText(context, "Scan Result : "+success, Toast.LENGTH_SHORT).show();
 
+            }
+            if (action.equals(WifiManager.NETWORK_STATE_CHANGED_ACTION)) {
+//                Log.e(TAG,"##NETWORK_STATE_CHANGED_ACTION");
+                NetworkInfo networkExtra = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
+                if(networkExtra!=null) {
+//                    Log.e(TAG,"##EXTRA_NETWORK_INFO" + networkExtra.toString());
+                    String name = networkExtra.getExtraInfo();
+                    Log.e(TAG,"Extra info = " + name);
+                    NetworkInfo.DetailedState s =  networkExtra.getDetailedState();
+                    if (s != null) {
+                        Log.e(TAG,"#Network detailed state: "+ s);
+                        //Toast.makeText(context,"Network state: "+ name + s,Toast.LENGTH_SHORT).show();
+                        switch (s){
+                            case CONNECTED:
+                                if (name.equals("\"NPA\"")) {
+                                    isWifiConnected = true;
+                                    Log.e(TAG,"#Connected to NPA!!");
+                                    Toast.makeText(context,"Connected to NPA",Toast.LENGTH_SHORT).show();
+                                } else {
+                                    if (isWifiConnected == true) {
+                                        isWifiConnected = false;
+                                        Log.e(TAG,"#Not required connection!!");
+                                        Toast.makeText(context,"Connected to some other network, trying to connect to NPA",Toast.LENGTH_SHORT).show();
+                                        t =  new Timer();
+                                        t.schedule(
+                                                new TimerTask(){
+
+                                                    @Override
+                                                    public void run(){
+                                                        try{
+                                                            if(isWifiConnected) {
+                                                                t.cancel();
+                                                                Log.e(TAG,"$timer stopped");
+                                                            } else  {
+                                                                Log.e(TAG,"$timer running");
+                                                                addWifi();
+                                                            }
+                                                        }
+                                                        catch (Exception e){
+                                                            e.printStackTrace();
+                                                        }
+
+                                                    }
+
+                                                }, 100,30000);
+                                    }
+                                }
+                                break;
+                            case DISCONNECTED:
+                                if (name.equals("\"NPA\"")) {
+//                                    isWifiConnected = false;
+//                                    Log.e(TAG,"#Disconnected from NPA!!");
+//                                    Toast.makeText(context,"Disconnected from NPA",Toast.LENGTH_SHORT).show();
+//                                    addWifi();
+                                }
+                                break;
+
+                            default:
+                                //    Log.e(TAG,"#Network detailed state: "+ s);
+                                break;
+                        }
+                    } else {
+                        Log.e(TAG,"#Network detailed state is null "+ s);
+                    }
+
+                }
             }
         }
     };
 
     public String getWifiApIpAddress() {
 
-            try {
-                NetworkInterface kP =null;
-                for (NetworkInterface intf : Collections.list(NetworkInterface.getNetworkInterfaces())) {
-                    Log.e(TAG,"Network Interface 2 : "+intf.getName());
-                    for (InetAddress addr : Collections.list(intf.getInetAddresses())) {
-                        if (!addr.isLoopbackAddress()){
-                            kP=intf;
-                            Log.e(TAG,"\n\n IP Address: " + addr.getHostAddress() );
-                          //  Log.e(TAG,"\n" + addr.getHostName() );
-                         //   Log.e(TAG,"\n" + addr.getCanonicalHostName() );
-                            Log.e(TAG,"Inf : " + intf.toString() );
-                            Log.e(TAG,"Inf Name" + intf.getName() );
-                            Log.e(TAG,"Inf Is Up " + intf.isUp() );
-                        }
+        try {
+            NetworkInterface kP =null;
+            for (NetworkInterface intf : Collections.list(NetworkInterface.getNetworkInterfaces())) {
+                Log.e(TAG,"Network Interface 2 : "+intf.getName());
+                for (InetAddress addr : Collections.list(intf.getInetAddresses())) {
+                    if (!addr.isLoopbackAddress()){
+                        kP=intf;
+                        Log.e(TAG,"\n\n IP Address: " + addr.getHostAddress() );
+                        //  Log.e(TAG,"\n" + addr.getHostName() );
+                        //   Log.e(TAG,"\n" + addr.getCanonicalHostName() );
+                        Log.e(TAG,"Inf : " + intf.toString() );
+                        Log.e(TAG,"Inf Name" + intf.getName() );
+                        Log.e(TAG,"Inf Is Up " + intf.isUp() );
                     }
                 }
-                if(kP!=null){
-                    Log.e(TAG,"kP Is Up ");
-                    if(bh!=null)
-                        bh.interrupt();
-                    bh = new BroadcastHelper();
-                    bh.start();
+            }
+            if(kP!=null){
+                Log.e(TAG,"kP Is Up ");
+                if(bh!=null)
+                    bh.interrupt();
+                bh = new BroadcastHelper();
+                bh.start();
 //                    InetAddress group = InetAddress.getByName("192.168.43.1");
 //                    MulticastSocket s = new MulticastSocket(6789);
 //                  //  s.setNetworkInterface(kP);
@@ -97,19 +170,19 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-                }
-                //InetAddress group = InetAddress.getByName("192.168.43.1");
-
-                //NetworkInterface k= s.getNetworkInterface();
-                //   s.setNetworkInterface();
-                //   s.joinGroup(group);
-
-
-
-            } catch (Exception ex) {
-             //   Log.e(TAG,"\n\n Error getting IP address: " + ex );
-                ex.printStackTrace();
             }
+            //InetAddress group = InetAddress.getByName("192.168.43.1");
+
+            //NetworkInterface k= s.getNetworkInterface();
+            //   s.setNetworkInterface();
+            //   s.joinGroup(group);
+
+
+
+        } catch (Exception ex) {
+            //   Log.e(TAG,"\n\n Error getting IP address: " + ex );
+            ex.printStackTrace();
+        }
 
         /*    for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en
                     .hasMoreElements();) {
@@ -131,6 +204,25 @@ public class MainActivity extends AppCompatActivity {
         return null;
     }
 
+    public void addWifi() {
+        WifiConfiguration configuration = new WifiConfiguration();
+        configuration.SSID = "\"" + wifiSsid + "\"";
+        configuration.preSharedKey = "\"" + wifiPassword + "\"";
+
+//                //WPA-PSK
+//                configuration.preSharedKey = "\"" + "agent#99" + "\"";
+        //WEP
+        //configuration.wepKeys[0] = "\"" + 123456 + "\"";
+
+//                WifiManager wifiManager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
+//                wifiManager.addNetwork(conf);
+
+        custom_wifi_id = manager.addNetwork(configuration);
+        boolean succeeded = manager.enableNetwork(custom_wifi_id, true);
+        Log.e(TAG, "succeeded: " + succeeded);
+        Log.e(TAG, "Network added : "+custom_wifi_id);
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,6 +231,7 @@ public class MainActivity extends AppCompatActivity {
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
+        filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
         registerReceiver(mReceiver, filter);
 
         manager = (WifiManager) this.getApplicationContext().getSystemService(WIFI_SERVICE);
@@ -206,23 +299,9 @@ public class MainActivity extends AppCompatActivity {
 
                 //密码错误也会添加成功，只不过连接不上
                 //Password error will also be added successfully, but not connected
-                WifiConfiguration configuration = new WifiConfiguration();
-                configuration.SSID = "\"" + wifiSsid + "\"";
-                configuration.preSharedKey = "\"" + wifiPassword + "\"";
 
-//                //WPA-PSK
-//                configuration.preSharedKey = "\"" + "agent#99" + "\"";
-                //WEP
-                //configuration.wepKeys[0] = "\"" + 123456 + "\"";
+                addWifi();
 
-//                WifiManager wifiManager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
-//                wifiManager.addNetwork(conf);
-
-                custom_wifi_id = manager.addNetwork(configuration);
-                boolean succeeded = manager.enableNetwork(custom_wifi_id, true);
-
-                Log.e(TAG, "succeeded: " + succeeded);
-                Log.e(TAG, "Network added : "+custom_wifi_id);
             }
         });
 
@@ -231,8 +310,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-             //   WifiInfo info = manager.getConnectionInfo();
-            //    manager.removeNetwork(info.getNetworkId());
+                //   WifiInfo info = manager.getConnectionInfo();
+                //    manager.removeNetwork(info.getNetworkId());
                 boolean reply = manager.removeNetwork(custom_wifi_id);
 
                 Log.e(TAG," Network Removed : "+custom_wifi_id+reply);
@@ -264,7 +343,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-               // boolean succeeded = manager.disableNetwork(manager.getConnectionInfo().getNetworkId());
+                // boolean succeeded = manager.disableNetwork(manager.getConnectionInfo().getNetworkId());
 
                 boolean succeeded = manager.disableNetwork(custom_wifi_id);
                 Log.e(TAG, " wifi_disable_one succeeded: " +custom_wifi_id+ succeeded);
@@ -338,12 +417,12 @@ public class MainActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.stop_hotspot).setOnClickListener(new View.OnClickListener(){
-           @RequiresApi(api = Build.VERSION_CODES.O)
-           @Override
+            @RequiresApi(api = Build.VERSION_CODES.O)
+            @Override
             public void onClick(View v){
-               if (mReservation != null)
-               mReservation.close();
-           }
+                if (mReservation != null)
+                    mReservation.close();
+            }
         });
     }
 
